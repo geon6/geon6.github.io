@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+<link rel="icon" type="image/ico" href="https://example.org//favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://example.org//favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://example.org//favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://example.org//android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://example.org//apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+<title>
+    
+    Argparse Issue 385 | My website
+    
+</title>
+
+<link rel="canonical" href="https://example.org/posts/argparse-issue-385/"/>
+
+<meta property="og:url" content="https://example.org/posts/argparse-issue-385/">
+  <meta property="og:site_name" content="My website">
+  <meta property="og:title" content="Argparse Issue 385">
+  <meta property="og:description" content="Argparse Issue 385.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-11-27T14:13:02+08:00">
+    <meta property="article:modified_time" content="2024-11-27T14:13:02+08:00">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/assets/combined.min.186794b3399a702d3092949042cdc215dea303c17e71e7c0254768448de11db8.css" media="all">
+
+
+
+
+
+
+
+
+
+  </head>
+
+  
+
+  
+  
+  
+
+  <body class="auto">
+
+    <div class="content">
+      <header>
+        
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">
+        <a href="https://example.org/">My website</a>
+    </h1>
+
+    <div class="flex">
+        
+
+        
+        
+      
+        <p class="small ">
+            <a href="/" >
+                /home
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/posts" >
+                /posts
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/about" >
+                /about
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+      </header>
+
+      <main class="main">
+        
+
+
+
+
+
+<div class="breadcrumbs">
+    
+    <a href="/">Home</a>
+    <span class="breadcrumbs-separator"> > </span>
+    
+    <a href="/posts/">Posts</a>
+    <span class="breadcrumbs-separator"> > </span>
+    
+    <a class="breadcrumbs-current" href="/posts/argparse-issue-385/">Argparse Issue 385</a>
+</div>
+
+
+
+<div >
+
+  <div class="single-intro-container">
+
+    
+
+    <h1 class="single-title">Argparse Issue 385</h1>
+    
+    <p class="single-summary">Argparse Issue 385.</p>
+    
+
+    
+
+    <p class="single-readtime">
+      
+      
+      
+      <time datetime="2024-11-27T14:13:02&#43;08:00">November 27, 2024</time>
+      
+
+      
+    </p>
+
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  <div class="single-content">
+    <h1 class="heading" id="tldr">
+  TLDR
+  <a href="#tldr">#</a>
+</h1>
+<p>Add return value in the lambda function in <code>store_into</code></p>
+<pre tabindex="0"><code>template &lt;typename T, typename std::enable_if&lt;
+                          std::is_integral&lt;T&gt;::value&gt;::type* = nullptr&gt;
+auto&amp; store_into(T&amp; var) {
+  if (m_default_value.has_value()) {
+    var = std::any_cast&lt;T&gt;(m_default_value);
+  }
+  action([&amp;var](const auto&amp; s) {
+    var = details::parse_number&lt;T, details::radix_10&gt;()(s);
+    return var;
+  });
+  return *this;
+}
+</code></pre><h1 class="heading" id="address">
+  Address
+  <a href="#address">#</a>
+</h1>
+<p><a href="https://github.com/p-ranav/argparse/issues/385">https://github.com/p-ranav/argparse/issues/385</a></p>
+<h1 class="heading" id="compile">
+  Compile
+  <a href="#compile">#</a>
+</h1>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#888;font-weight:bold">#include</span> <span style="color:#888;font-weight:bold">&lt;argparse/argparse.hpp&gt;</span><span style="color:#888;font-weight:bold">
+</span></span></span><span style="display:flex;"><span><span style="color:#888;font-weight:bold"></span>
+</span></span><span style="display:flex;"><span><span style="font-weight:bold;text-decoration:underline">int</span> <span style="color:#666;font-weight:bold;font-style:italic">main</span>(<span style="font-weight:bold;text-decoration:underline">int</span> argc, <span style="font-weight:bold;text-decoration:underline">char</span>* argv[]) {
+</span></span><span style="display:flex;"><span>  argparse::ArgumentParser program(<span style="color:#666;font-style:italic">&#34;cool binary&#34;</span>);
+</span></span><span style="display:flex;"><span>  size_t num_threads;
+</span></span><span style="display:flex;"><span>  program.add_argument(<span style="color:#666;font-style:italic">&#34;--threads&#34;</span>)
+</span></span><span style="display:flex;"><span>      .help(<span style="color:#666;font-style:italic">&#34;Number of threads to use&#34;</span>)
+</span></span><span style="display:flex;"><span>      .metavar(<span style="color:#666;font-style:italic">&#34;N&#34;</span>)
+</span></span><span style="display:flex;"><span>      .scan&lt;<span style="color:#666;font-style:italic">&#39;u&#39;</span>, size_t&gt;()
+</span></span><span style="display:flex;"><span>      .required()
+</span></span><span style="display:flex;"><span>      .default_value&lt;size_t&gt;(1)
+</span></span><span style="display:flex;"><span>      .store_into(num_threads)
+</span></span><span style="display:flex;"><span>      ;
+</span></span><span style="display:flex;"><span>  program.add_argument(<span style="color:#666;font-style:italic">&#34;--boxes&#34;</span>)
+</span></span><span style="display:flex;"><span>      .help(<span style="color:#666;font-style:italic">&#34;Number of boxes to use&#34;</span>)
+</span></span><span style="display:flex;"><span>      .metavar(<span style="color:#666;font-style:italic">&#34;B&#34;</span>)
+</span></span><span style="display:flex;"><span>      .required()
+</span></span><span style="display:flex;"><span>      .scan&lt;<span style="color:#666;font-style:italic">&#39;u&#39;</span>, size_t&gt;()
+</span></span><span style="display:flex;"><span>      .default_value(size_t(1));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="font-weight:bold;text-decoration:underline">try</span> {
+</span></span><span style="display:flex;"><span>    program.parse_args(argc, argv);
+</span></span><span style="display:flex;"><span>  } <span style="font-weight:bold;text-decoration:underline">catch</span> (<span style="font-weight:bold;text-decoration:underline">const</span> std::exception&amp; err) {
+</span></span><span style="display:flex;"><span>    std::cerr &lt;&lt; err.what() &lt;&lt; std::endl;
+</span></span><span style="display:flex;"><span>    std::cerr &lt;&lt; program;
+</span></span><span style="display:flex;"><span>    <span style="font-weight:bold;text-decoration:underline">return</span> EXIT_FAILURE;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  size_t num_boxes = program.get&lt;size_t&gt;(<span style="color:#666;font-style:italic">&#34;--boxes&#34;</span>);
+</span></span><span style="display:flex;"><span>  std::cout &lt;&lt; <span style="color:#666;font-style:italic">&#34;got num_threads = &#34;</span> &lt;&lt; num_threads
+</span></span><span style="display:flex;"><span>            &lt;&lt; <span style="color:#666;font-style:italic">&#34; num_boxes = &#34;</span> &lt;&lt; num_boxes &lt;&lt; std::endl;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>build</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span><span style="font-weight:bold;font-style:italic">cmake_minimum_required</span>(<span style="color:#666;font-style:italic">VERSION</span> <span style="color:#666;font-style:italic">3.20</span>)<span style="">
+</span></span></span><span style="display:flex;"><span><span style=""></span><span style="font-weight:bold;font-style:italic">set</span>(<span style="color:#666;font-style:italic">CMAKE_CXX_STANDARD</span> <span style="color:#666;font-style:italic">17</span>)<span style="">
+</span></span></span><span style="display:flex;"><span><span style=""></span><span style="font-weight:bold;font-style:italic">set</span>(<span style="color:#666;font-style:italic">CMAKE_CXX_STANDARD_REQUIRED</span> <span style="color:#666;font-style:italic">ON</span>)<span style="">
+</span></span></span><span style="display:flex;"><span><span style=""></span><span style="font-weight:bold;font-style:italic">project</span>(<span style="color:#666;font-style:italic">issue_argparse</span>)<span style="">
+</span></span></span><span style="display:flex;"><span><span style=""></span><span style="font-weight:bold;font-style:italic">include_directories</span>(<span style="color:#666;font-style:italic">include</span>)<span style="">
+</span></span></span><span style="display:flex;"><span><span style=""></span><span style="font-weight:bold;font-style:italic">add_executable</span>(<span style="color:#666;font-style:italic">main</span> <span style="color:#666;font-style:italic">main.cpp</span>)<span style="">
+</span></span></span></code></pre></div><p>execute</p>
+<pre tabindex="0"><code>&gt; ./build/main --threads 5 --boxes 3 
+</code></pre><p>and then throw error</p>
+<pre tabindex="0"><code>--threads: no value provided.
+</code></pre><h1 class="heading" id="debug">
+  Debug
+  <a href="#debug">#</a>
+</h1>
+<h2 class="heading" id="where-is-the-bug">
+  Where is the bug?
+  <a href="#where-is-the-bug">#</a>
+</h2>
+<p>The error message come from the function <code>throw_required_arg_no_value_provided_error</code>, and this function is only used in function <code>validate</code>. Let&rsquo;s step into this function.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="font-weight:bold;text-decoration:underline">void</span> <span style="color:#666;font-weight:bold;font-style:italic">validate</span>() <span style="font-weight:bold;text-decoration:underline">const</span> {
+</span></span><span style="display:flex;"><span>  <span style="font-weight:bold;text-decoration:underline">if</span> (m_is_optional) {
+</span></span><span style="display:flex;"><span>    <span style="font-weight:bold;text-decoration:underline">if</span> (!m_is_used &amp;&amp; !m_default_value.has_value() &amp;&amp; m_is_required) {
+</span></span><span style="display:flex;"><span>      throw_required_arg_not_used_error();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="font-weight:bold;text-decoration:underline">if</span> (m_is_used &amp;&amp; m_is_required &amp;&amp; m_values.empty()) {
+</span></span><span style="display:flex;"><span>      throw_required_arg_no_value_provided_error();  <span style="color:#888;font-style:italic">// error occur here!
+</span></span></span><span style="display:flex;"><span><span style="color:#888;font-style:italic"></span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#888;font-style:italic">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#888;font-style:italic"></span>} 
+</span></span></code></pre></div><p>It seems that the reason for the bug is <code>m_values.empty()</code>. Next, we need to find the reason why the <code>m_values.empty()</code> equals to <code>true</code>.</p>
+<p>Function <code>validate</code> will be called in the execution of <code>program.parse_args</code>. By adding breakpoint to function <code>program.parse_args</code>, i found something odd in the following code</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>std::visit(ActionApply{start, end, *<span style="font-weight:bold;text-decoration:underline">this</span>}, m_action);
+</span></span></code></pre></div><ul>
+<li>When the arg is <code>--boxes</code>, the <code>m_action</code> is recognized as <code>valued_action</code></li>
+<li>When the arg is <code>--threads</code>, the <code>m_action</code> is recognized as <code>void_action</code>
+When the arg is recognized as <code>valued_action</code>, the <code>m_values</code> will be modified by the following code.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>std::transform(first, last, std::back_inserter(self.m_values), f);
+</span></span></code></pre></div><p>Therefore, the <code>m_values.empty()</code> is <code>false</code> in arg <code>--boxes</code>, while the <code>m_values.empty()</code> is <code>true</code> in arg <code>--threads</code>. This is the reason for the bug.</p>
+<h2 class="heading" id="why-the-arg---threads-and---boxes-is-different">
+  Why the arg <code>--threads</code> and <code>--boxes</code> is different?
+  <a href="#why-the-arg---threads-and---boxes-is-different">#</a>
+</h2>
+<p>The following code is the definition of <code>valued_action</code> and <code>void_action</code></p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="font-weight:bold;text-decoration:underline">using</span> valued_action = std::function&lt;std::any(<span style="font-weight:bold;text-decoration:underline">const</span> std::string &amp;)&gt;;
+</span></span><span style="display:flex;"><span><span style="font-weight:bold;text-decoration:underline">using</span> void_action = std::function&lt;<span style="font-weight:bold;text-decoration:underline">void</span>(<span style="font-weight:bold;text-decoration:underline">const</span> std::string &amp;)&gt;;
+</span></span></code></pre></div><p>From the definition, i found that there is only one different between the two action, which is the return type. It doesn&rsquo;t seem to be helpful for debugging. As the code mentioned, the only different between arg <code>--threads</code> and <code>--boxes</code> is the call of <code>store_into</code>. Let&rsquo;s step into this function:</p>
+<pre tabindex="0"><code>template &lt;typename T, typename std::enable_if&lt;std::is_integral&lt;T&gt;::value&gt;::type * = nullptr&gt;
+auto &amp;store_into(T &amp;var) {
+  // ...
+  action([&amp;var](const auto &amp;s) {
+    var = details::parse_number&lt;T, details::radix_10&gt;()(s);
+  });
+  // ...
+}
+</code></pre><p>The core of the function <code>store_into</code> is <code>action</code>, let&rsquo;s step into it.</p>
+<pre tabindex="0"><code>template &lt;class F, class... Args&gt;
+auto action(F &amp;&amp;callable, Args &amp;&amp;... bound_args)
+    -&gt; std::enable_if_t&lt;std::is_invocable_v&lt;F, Args..., std::string const&gt;,
+                        Argument &amp;&gt; {
+  using action_type = std::conditional_t&lt;
+      std::is_void_v&lt;std::invoke_result_t&lt;F, Args..., std::string const&gt;&gt;,
+      void_action, valued_action&gt;;
+  // ...
+  return *this;
+}
+</code></pre><p>Function <code>action</code> first needs to define the action_type. This hateful code can be rewritten as:</p>
+<pre tabindex="0"><code>using invoke_result = std::invoke_result_t&lt;F, Args..., std::string const&gt;;
+constexpr auto is_void = std::is_void_v&lt;invoke_result&gt;;
+using action_type = std::conditional_t&lt;is_void, void_action, valued_action&gt;;
+</code></pre><p>It means that:</p>
+<pre tabindex="0"><code>if invoke_result == void then
+  action_type = void_action
+else
+  action_type = valued_action
+</code></pre><p>Back to the function <code>store_into</code></p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>action([&amp;var](<span style="font-weight:bold;text-decoration:underline">const</span> <span style="font-weight:bold;text-decoration:underline">auto</span>&amp; s) {
+</span></span><span style="display:flex;"><span>  var = details::parse_number&lt;T, details::radix_10&gt;()(s);
+</span></span><span style="display:flex;"><span>});
+</span></span></code></pre></div><p>The parameter of <code>action</code> have no return value, so the <code>action_type</code> will be recognized as <code>void_action</code>. After adding the return value, the program can exit successfully.</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>action([&amp;var](<span style="font-weight:bold;text-decoration:underline">const</span> <span style="font-weight:bold;text-decoration:underline">auto</span>&amp; s) {
+</span></span><span style="display:flex;"><span>  var = details::parse_number&lt;T, details::radix_10&gt;()(s);
+</span></span><span style="display:flex;"><span>  <span style="font-weight:bold;text-decoration:underline">return</span> var;
+</span></span><span style="display:flex;"><span>});
+</span></span></code></pre></div><p>Execute result:</p>
+<pre tabindex="0"><code>&gt; ./build/main --threads 5 --boxes 4
+got num_threads = 5 num_boxes = 4
+</code></pre><h2 class="heading" id="other-type">
+  Other type?
+  <a href="#other-type">#</a>
+</h2>
+<p>When use other partial specialization of <code>store_into</code>, the error occur again. Adding return value for all <code>store_into</code> can solve it.</p>
+
+    
+  </div>
+
+  
+
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+  <div class="back-to-top">
+    <a href="#top">
+      back to top
+    </a>
+  </div>
+  
+
+</div>
+
+
+      </main>
+    </div>
+
+    <footer>
+      
+
+    
+    <p>Powered by
+        <a href="https://gohugo.io/">Hugo</a>
+        and
+        <a href="https://github.com/tomfran/typo">tomfran/typo</a>
+    </p>
+    
+    
+    
+
+
+
+    </footer>
+    
+  </body>
+
+  <script>
+
+  function isAuto() {
+    return document.body.classList.contains("auto");
+  }
+
+  function setTheme() {
+    if (!isAuto()) {
+      return
+    }
+
+    document.body.classList.remove("auto");
+    let cls = "light";
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      cls = "dark";
+    }
+
+    document.body.classList.add(cls);
+  }
+
+  function invertBody() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  if (isAuto()) {
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(invertBody);
+  }
+
+  setTheme();
+
+</script>
+
+</html>

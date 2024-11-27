@@ -6,14 +6,14 @@
     <description>Recent content in Posts on My website</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 12 Nov 2023 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 27 Nov 2024 14:13:02 +0800</lastBuildDate>
     <atom:link href="https://example.org/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Log-Structured Merge Tree</title>
-      <link>https://example.org/posts/hello/</link>
-      <pubDate>Sun, 12 Nov 2023 00:00:00 +0000</pubDate>
-      <guid>https://example.org/posts/hello/</guid>
-      <description>An LSM Tree overview and Java implementation.</description>
+      <title>Argparse Issue 385</title>
+      <link>https://example.org/posts/argparse-issue-385/</link>
+      <pubDate>Wed, 27 Nov 2024 14:13:02 +0800</pubDate>
+      <guid>https://example.org/posts/argparse-issue-385/</guid>
+      <description>Argparse Issue 385.</description>
     </item>
   </channel>
 </rss>
