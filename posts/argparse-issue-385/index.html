@@ -314,6 +314,14 @@ else
 </span></span></code></pre></div><p>Execute result:</p>
 <pre tabindex="0"><code>&gt; ./build/main --threads 5 --boxes 4
 got num_threads = 5 num_boxes = 4
+</code></pre><h2 class="heading" id="why-the-arg---boxes-have-no-bug">
+  Why the arg <code>--boxes</code> have no bug?
+  <a href="#why-the-arg---boxes-have-no-bug">#</a>
+</h2>
+<p>This is beacuse the default <code>action_type</code> of <code>m_action</code> is <code>valued_action</code>. The <code>action_type</code> will change into <code>void_action</code> when you call <code>store_into</code>.</p>
+<pre tabindex="0"><code>std::variant&lt;valued_action, void_action&gt; m_action{
+    std::in_place_type&lt;valued_action&gt;,
+    [](const std::string&amp; value) { return value; }};
 </code></pre><h2 class="heading" id="other-type">
   Other type?
   <a href="#other-type">#</a>
